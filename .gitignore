@@ -1,0 +1,7 @@
+credenciales.json
+.streamlit/secrets.toml
+extraer.py
+correctos.py
+leer.py
+facturas/
+__pycache__/
