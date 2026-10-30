@@ -5,18 +5,19 @@ import google.generativeai as genai
 import json
 import gspread
 import time
+import os
 from google.oauth2.service_account import Credentials
 
 # --- CONFIGURACIÓN ---
-import os
 if os.path.exists(r"C:\Program Files\Tesseract-OCR\tesseract.exe"):
     pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 UMBRAL_CONFIANZA = 80
 ID_HOJA = st.secrets["ID_HOJA"]
 modelo = genai.GenerativeModel("gemini-flash-lite-latest")
 
-# --- FUNCIÓN: procesar una imagen ya abierta ---
+# --- FUNCIÓN: procesar una imagen ---
 def procesar(imagen):
     texto_ocr = pytesseract.image_to_string(imagen, lang="spa")
     prompt = f"""
@@ -38,12 +39,10 @@ Texto OCR:
 # --- FUNCIÓN: guardar en Sheets ---
 def guardar_en_sheets(nombre, datos, estado):
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
-if os.path.exists("credenciales.json"):
-    # En tu PC: usa el archivo local
-    creds = Credentials.from_service_account_file("credenciales.json", scopes=scopes)
-else:
-    # En la nube: usa los secretos de Streamlit
-    creds = Credentials.from_service_account_info(dict(st.secrets["gcp_credenciales"]), scopes=scopes)
+    if os.path.exists("credenciales.json"):
+        creds = Credentials.from_service_account_file("credenciales.json", scopes=scopes)
+    else:
+        creds = Credentials.from_service_account_info(dict(st.secrets["gcp_credenciales"]), scopes=scopes)
     cliente = gspread.authorize(creds)
     hoja = cliente.open_by_key(ID_HOJA).sheet1
     if not hoja.get_all_values():
