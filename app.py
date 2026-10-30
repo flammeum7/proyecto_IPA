@@ -38,7 +38,12 @@ Texto OCR:
 # --- FUNCIÓN: guardar en Sheets ---
 def guardar_en_sheets(nombre, datos, estado):
     scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+if os.path.exists("credenciales.json"):
+    # En tu PC: usa el archivo local
     creds = Credentials.from_service_account_file("credenciales.json", scopes=scopes)
+else:
+    # En la nube: usa los secretos de Streamlit
+    creds = Credentials.from_service_account_info(dict(st.secrets["gcp_credenciales"]), scopes=scopes)
     cliente = gspread.authorize(creds)
     hoja = cliente.open_by_key(ID_HOJA).sheet1
     if not hoja.get_all_values():
